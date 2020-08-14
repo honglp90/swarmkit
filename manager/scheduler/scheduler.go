@@ -384,7 +384,9 @@ func (s *Scheduler) tick(ctx context.Context) {
 	var oneOffTasks []*api.Task
 	schedulingDecisions := make(map[string]schedulingDecision, len(s.unassignedTasks))
 
+	log.G(ctx).Infof("s.unassignedTasks is out of for: %+v", s.unassignedTasks)
 	for taskID, t := range s.unassignedTasks {
+	    log.G(ctx).Infof("s.unassignedTasks in for is: %+v", s.unassignedTasks)
 		if t == nil || t.NodeID != "" {
 			// task deleted or already assigned
 			delete(s.unassignedTasks, taskID)
@@ -409,7 +411,8 @@ func (s *Scheduler) tick(ctx context.Context) {
 		}
 		delete(s.unassignedTasks, taskID)
 	}
-
+    log.G(ctx).Infof("tasksByCommonSpec is: %+v", tasksByCommonSpec)
+    log.G(ctx).Infof("oneOffTasks is: %+v", oneOffTasks)
 	for _, taskGroup := range tasksByCommonSpec {
 		s.scheduleTaskGroup(ctx, taskGroup, schedulingDecisions)
 	}
@@ -665,6 +668,7 @@ func (s *Scheduler) scheduleNTasksOnNodes(ctx context.Context, n int, taskGroup 
 
     // 降序排列
     sort.Sort(sort.Reverse(sort.IntSlice(memory_list)))
+    log.G(ctx).Infof("memory of tasks is: %v", memory_list)
 
     // 根据memory降序的方式遍历task
     for _, value := range memory_list{
@@ -697,7 +701,8 @@ func (s *Scheduler) scheduleNTasksOnNodes(ctx context.Context, n int, taskGroup 
 		node := &nodes[nodeIter%nodeCount]
 
 		log.G(ctx).WithField("task.id", t.ID).Debugf("assigning to node %s", node.ID)
-		log.G(ctx).Infof("memory is %v of task %+v assigning to node %s", value, *t, node.ID)
+		// log.G(ctx).Infof("memory is %v of task %+v assigning to node %s", value, *t, node.ID)
+		log.G(ctx).Infof("memory is: %v of taskID: %v serviceID: %v serviceName: %v assigning to node %s", value, taskID, (*t).ServiceID, (*t).ServiceAnnotations.Name, node.ID)
 		newT := *t
 		newT.NodeID = node.ID
 		newT.Status = api.TaskStatus{

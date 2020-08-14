@@ -1,10 +1,10 @@
 package scheduler
 
-import "sort"
-import "unsafe"
 import (
 	"context"
 	"time"
+	"sort"
+	"unsafe"
 
 	"github.com/docker/swarmkit/api"
 	"github.com/docker/swarmkit/api/genericresource"
@@ -664,8 +664,7 @@ func (s *Scheduler) scheduleNTasksOnNodes(ctx context.Context, n int, taskGroup 
     }
 
     // 降序排列
-    sort.Sort(sort.Reverse(sort.
-    (memory_list)))
+    sort.Sort(sort.Reverse(sort.IntSlice(memory_list)))
 
     // 根据memory降序的方式遍历task
     for _, value := range memory_list{

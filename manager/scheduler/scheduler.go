@@ -376,6 +376,14 @@ func (s *Scheduler) processPreassignedTasks(ctx context.Context) {
 
 // tick attempts to schedule the queue.
 func (s *Scheduler) tick(ctx context.Context) {
+
+
+    log.G(ctx).Infof("begin to wait 5 second")
+    log.G(ctx).Infof("before wait 5 second unassignedTasks is: %+v", s.unassignedTasks)
+    time.Sleep(time.Second * 5)
+    log.G(ctx).Infof("wait 5 second end")
+    log.G(ctx).Infof("after wait 5 second unassignedTasks after is: %+v", s.unassignedTasks)
+
 	type commonSpecKey struct {
 		serviceID   string
 		specVersion api.Version

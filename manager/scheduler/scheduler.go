@@ -385,7 +385,8 @@ func (s *Scheduler) tick(ctx context.Context) {
 	schedulingDecisions := make(map[string]schedulingDecision, len(s.unassignedTasks))
 
 	log.G(ctx).Infof("s.unassignedTasks is by hongliping: %+v", s.unassignedTasks)
-	for taslID, t := range s.unassignedTasks {
+	var memory int64
+	for taskID, t := range s.unassignedTasks {
 	    memory = (*(*(*t).Spec.Resources).Limits).MemoryBytes
 	    log.G(ctx).Infof("memory is: %v of taskID: %v serviceID: %v serviceName: %v in unassignedTasks by hongliping", value, taskID, (*t).ServiceID, (*t).ServiceAnnotations.Name)
 	}

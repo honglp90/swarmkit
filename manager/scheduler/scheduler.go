@@ -434,13 +434,13 @@ func (s *Scheduler) tick(ctx context.Context) {
     var scheduleTaskGroupFlag string
     // 根据memory降序的方式遍历task
     for _, mem_value := range memory_list{
-        for assign_task_ID, assign_task := range tasksByCommonSpec {
+        for _, taskGroup := range tasksByCommonSpec {
             scheduleTaskGroupFlag = "false"
-            for taskID := range taskGroup{
+            for taskID, _ := range taskGroup{
                  memory = (*(*(*taskGroup[assign_task_ID]).Spec.Resources).Limits).MemoryBytes
                 // memory相同且未指派的task
-                if value == *(*int)(unsafe.Pointer(&memory)) && task_assign_flag[assign_task_ID] == "false"{
-                    task_assign_flag[assign_task_ID] = "true"
+                if mem_value == *(*int)(unsafe.Pointer(&memory)) && task_assign_flag[taskID] == "false"{
+                    task_assign_flag[taskID] = "true"
                     scheduleTaskGroupFlag = "true"
                     s.scheduleTaskGroup(ctx, taskGroup, schedulingDecisions)
                     break

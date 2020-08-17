@@ -437,7 +437,7 @@ func (s *Scheduler) tick(ctx context.Context) {
         for _, taskGroup := range tasksByCommonSpec {
             scheduleTaskGroupFlag = "false"
             for taskID, _ := range taskGroup{
-                 memory = (*(*(*taskGroup[assign_task_ID]).Spec.Resources).Limits).MemoryBytes
+                 memory = (*(*(*taskGroup[taskID]).Spec.Resources).Limits).MemoryBytes
                 // memory相同且未指派的task
                 if mem_value == *(*int)(unsafe.Pointer(&memory)) && task_assign_flag[taskID] == "false"{
                     task_assign_flag[taskID] = "true"

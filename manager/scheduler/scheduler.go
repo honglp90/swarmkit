@@ -376,11 +376,6 @@ func (s *Scheduler) processPreassignedTasks(ctx context.Context) {
 
 // tick attempts to schedule the queue.
 func (s *Scheduler) tick(ctx context.Context) {
-
-    log.G(ctx).Infof("before wait 5 second unassignedTasks is by hongliping: %+v", s.unassignedTasks)
-    time.Sleep(time.Second * 5)
-    log.G(ctx).Infof("after wait 5 second unassignedTasks after is by hongliping: %+v", s.unassignedTasks)
-
 	type commonSpecKey struct {
 		serviceID   string
 		specVersion api.Version
@@ -389,9 +384,12 @@ func (s *Scheduler) tick(ctx context.Context) {
 	var oneOffTasks []*api.Task
 	schedulingDecisions := make(map[string]schedulingDecision, len(s.unassignedTasks))
 
-	log.G(ctx).Infof("s.unassignedTasks is out of for by hongliping: %+v", s.unassignedTasks)
+	log.G(ctx).Infof("s.unassignedTasks is by hongliping: %+v", s.unassignedTasks)
+	for taslID, t := range s.unassignedTasks {
+	    memory = (*(*(*t).Spec.Resources).Limits).MemoryBytes
+	    log.G(ctx).Infof("memory is: %v of taskID: %v serviceID: %v serviceName: %v in unassignedTasks by hongliping", value, taskID, (*t).ServiceID, (*t).ServiceAnnotations.Name)
+	}
 	for taskID, t := range s.unassignedTasks {
-	    log.G(ctx).Infof("s.unassignedTasks in for is by hongliping: %+v", s.unassignedTasks)
 		if t == nil || t.NodeID != "" {
 			// task deleted or already assigned
 			delete(s.unassignedTasks, taskID)
@@ -419,6 +417,12 @@ func (s *Scheduler) tick(ctx context.Context) {
     log.G(ctx).Infof("tasksByCommonSpec is by hongliping: %+v", tasksByCommonSpec)
     log.G(ctx).Infof("oneOffTasks is by hongliping: %+v", oneOffTasks)
 	for _, taskGroup := range tasksByCommonSpec {
+	    // add by hongliping
+	    log.G(ctx).Infof("for taskGroup in tasksByCommonSpec by hongliping")
+	    for taskID := range taskGroup{
+            memory = (*(*(*taskGroup[taskID]).Spec.Resources).Limits).MemoryBytes
+            log.G(ctx).Infof("memory is: %v of taskID: %v serviceID: %v serviceName: %v by hongliping", *(*int)(unsafe.Pointer(&memory)), taskID, (*taskGroup[taskID]).ServiceID, (*taskGroup[taskID]).ServiceAnnotations.Name)
+	    }
 		s.scheduleTaskGroup(ctx, taskGroup, schedulingDecisions)
 	}
 	for _, t := range oneOffTasks {

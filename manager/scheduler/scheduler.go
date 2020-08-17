@@ -17,8 +17,7 @@ import (
 const (
 	// monitorFailures is the lookback period for counting failures of
 	// a task to determine if a node is faulty for a particular service.
-	// monitorFailures = 5 * time.Minute
-	monitorFailures = 5 * time.Second
+	monitorFailures = 5 * time.Minute
 
 	// maxFailures is the number of failures within monitorFailures that
 	// triggers downweighting of a node in the sorting function.
@@ -384,12 +383,6 @@ func (s *Scheduler) tick(ctx context.Context) {
 	var oneOffTasks []*api.Task
 	schedulingDecisions := make(map[string]schedulingDecision, len(s.unassignedTasks))
 
-	log.G(ctx).Infof("s.unassignedTasks is by hongliping: %+v", s.unassignedTasks)
-	var memory int64
-	for taskID, t := range s.unassignedTasks {
-	    memory = (*(*(*t).Spec.Resources).Limits).MemoryBytes
-	    log.G(ctx).Infof("memory is: %v of taskID: %v serviceID: %v serviceName: %v in unassignedTasks by hongliping", *(*int)(unsafe.Pointer(&memory)), taskID, (*t).ServiceID, (*t).ServiceAnnotations.Name)
-	}
 	for taskID, t := range s.unassignedTasks {
 		if t == nil || t.NodeID != "" {
 			// task deleted or already assigned
@@ -416,16 +409,51 @@ func (s *Scheduler) tick(ctx context.Context) {
 		delete(s.unassignedTasks, taskID)
 	}
     log.G(ctx).Infof("tasksByCommonSpec is by hongliping: %+v", tasksByCommonSpec)
-    log.G(ctx).Infof("oneOffTasks is by hongliping: %+v", oneOffTasks)
-	for _, taskGroup := range tasksByCommonSpec {
-	    // add by hongliping
-	    log.G(ctx).Infof("for taskGroup in tasksByCommonSpec by hongliping")
-	    for taskID := range taskGroup{
+
+    // 用于记录内存，用于排序
+	var memory_list = []int{}
+    var memory int64
+
+    // 用于标记task是否指派
+    var task_assign_flag map[string]string;
+    task_assign_flag = make(map[string]string)
+    for _, taskGroup := range tasksByCommonSpec {
+        for taskID := range taskGroup{
+            // 收集memory_list
             memory = (*(*(*taskGroup[taskID]).Spec.Resources).Limits).MemoryBytes
-            log.G(ctx).Infof("memory is: %v of taskID: %v serviceID: %v serviceName: %v by hongliping", *(*int)(unsafe.Pointer(&memory)), taskID, (*taskGroup[taskID]).ServiceID, (*taskGroup[taskID]).ServiceAnnotations.Name)
-	    }
-		s.scheduleTaskGroup(ctx, taskGroup, schedulingDecisions)
-	}
+            memory_list = append(memory_list, *(*int)(unsafe.Pointer(&memory)))
+            // 默认未指派
+            task_assign_flag[taskID] = "false"
+        }
+    }
+    // 降序排列
+    sort.Sort(sort.Reverse(sort.IntSlice(memory_list)))
+    log.G(ctx).Infof("memory of tasksByCommonSpec is by hongliping: %v", memory_list)
+
+
+    var scheduleTaskGroupFlag string
+    // 根据memory降序的方式遍历task
+    for _, mem_value := range memory_list{
+        for assign_task_ID, assign_task := range tasksByCommonSpec {
+            scheduleTaskGroupFlag = "false"
+            for taskID := range taskGroup{
+                 memory = (*(*(*taskGroup[assign_task_ID]).Spec.Resources).Limits).MemoryBytes
+                // memory相同且未指派的task
+                if value == *(*int)(unsafe.Pointer(&memory)) && task_assign_flag[assign_task_ID] == "false"{
+                    task_assign_flag[assign_task_ID] = "true"
+                    scheduleTaskGroupFlag = "true"
+                    s.scheduleTaskGroup(ctx, taskGroup, schedulingDecisions)
+                    break
+                }
+            }
+            if scheduleTaskGroupFlag == "true"{
+                break
+            }
+        }
+    }
+//	for _, taskGroup := range tasksByCommonSpec {
+//		s.scheduleTaskGroup(ctx, taskGroup, schedulingDecisions)
+//	}
 	for _, t := range oneOffTasks {
 		s.scheduleTaskGroup(ctx, map[string]*api.Task{t.ID: t}, schedulingDecisions)
 	}

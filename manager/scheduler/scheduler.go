@@ -388,7 +388,7 @@ func (s *Scheduler) tick(ctx context.Context) {
 	var memory int64
 	for taskID, t := range s.unassignedTasks {
 	    memory = (*(*(*t).Spec.Resources).Limits).MemoryBytes
-	    log.G(ctx).Infof("memory is: %v of taskID: %v serviceID: %v serviceName: %v in unassignedTasks by hongliping", value, taskID, (*t).ServiceID, (*t).ServiceAnnotations.Name)
+	    log.G(ctx).Infof("memory is: %v of taskID: %v serviceID: %v serviceName: %v in unassignedTasks by hongliping", *(*int)(unsafe.Pointer(&memory)), taskID, (*t).ServiceID, (*t).ServiceAnnotations.Name)
 	}
 	for taskID, t := range s.unassignedTasks {
 		if t == nil || t.NodeID != "" {

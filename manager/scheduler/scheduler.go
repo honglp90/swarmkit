@@ -70,7 +70,6 @@ func (s *Scheduler) setupTasksList(tx store.ReadTx) error {
 	}
 
 	tasksByNode := make(map[string]map[string]*api.Task)
-	log.Info("Task of setupTasksList by hongliping: %+v", tasks)
 	for _, t := range tasks {
 		// Ignore all tasks that have not reached PENDING
 		// state and tasks that no longer consume resources.
@@ -101,7 +100,6 @@ func (s *Scheduler) setupTasksList(tx store.ReadTx) error {
 		}
 		tasksByNode[t.NodeID][t.ID] = t
 	}
-    log.Info("tasksByNode of setupTasksList by hongliping: %+v", tasksByNode)
 	return s.buildNodeSet(tx, tasksByNode)
 }
 

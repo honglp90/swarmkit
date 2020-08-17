@@ -17,7 +17,8 @@ import (
 const (
 	// monitorFailures is the lookback period for counting failures of
 	// a task to determine if a node is faulty for a particular service.
-	monitorFailures = 5 * time.Minute
+	// monitorFailures = 5 * time.Minute
+	monitorFailures = 5 * time.Second
 
 	// maxFailures is the number of failures within monitorFailures that
 	// triggers downweighting of a node in the sorting function.
@@ -69,6 +70,7 @@ func (s *Scheduler) setupTasksList(tx store.ReadTx) error {
 	}
 
 	tasksByNode := make(map[string]map[string]*api.Task)
+	log.G(ctx).Infof("Task of setupTasksList by hongliping: %+v", tasks)
 	for _, t := range tasks {
 		// Ignore all tasks that have not reached PENDING
 		// state and tasks that no longer consume resources.
@@ -99,7 +101,7 @@ func (s *Scheduler) setupTasksList(tx store.ReadTx) error {
 		}
 		tasksByNode[t.NodeID][t.ID] = t
 	}
-
+    log.G(ctx).Infof("tasksByNode of setupTasksList by hongliping: %+v", tasksByNode)
 	return s.buildNodeSet(tx, tasksByNode)
 }
 
@@ -377,12 +379,9 @@ func (s *Scheduler) processPreassignedTasks(ctx context.Context) {
 // tick attempts to schedule the queue.
 func (s *Scheduler) tick(ctx context.Context) {
 
-
-    log.G(ctx).Infof("begin to wait 5 second")
-    log.G(ctx).Infof("before wait 5 second unassignedTasks is: %+v", s.unassignedTasks)
+    log.G(ctx).Infof("before wait 5 second unassignedTasks is by hongliping: %+v", s.unassignedTasks)
     time.Sleep(time.Second * 5)
-    log.G(ctx).Infof("wait 5 second end")
-    log.G(ctx).Infof("after wait 5 second unassignedTasks after is: %+v", s.unassignedTasks)
+    log.G(ctx).Infof("after wait 5 second unassignedTasks after is by hongliping: %+v", s.unassignedTasks)
 
 	type commonSpecKey struct {
 		serviceID   string
@@ -392,9 +391,9 @@ func (s *Scheduler) tick(ctx context.Context) {
 	var oneOffTasks []*api.Task
 	schedulingDecisions := make(map[string]schedulingDecision, len(s.unassignedTasks))
 
-	log.G(ctx).Infof("s.unassignedTasks is out of for: %+v", s.unassignedTasks)
+	log.G(ctx).Infof("s.unassignedTasks is out of for by hongliping: %+v", s.unassignedTasks)
 	for taskID, t := range s.unassignedTasks {
-	    log.G(ctx).Infof("s.unassignedTasks in for is: %+v", s.unassignedTasks)
+	    log.G(ctx).Infof("s.unassignedTasks in for is by hongliping: %+v", s.unassignedTasks)
 		if t == nil || t.NodeID != "" {
 			// task deleted or already assigned
 			delete(s.unassignedTasks, taskID)
@@ -419,8 +418,8 @@ func (s *Scheduler) tick(ctx context.Context) {
 		}
 		delete(s.unassignedTasks, taskID)
 	}
-    log.G(ctx).Infof("tasksByCommonSpec is: %+v", tasksByCommonSpec)
-    log.G(ctx).Infof("oneOffTasks is: %+v", oneOffTasks)
+    log.G(ctx).Infof("tasksByCommonSpec is by hongliping: %+v", tasksByCommonSpec)
+    log.G(ctx).Infof("oneOffTasks is by hongliping: %+v", oneOffTasks)
 	for _, taskGroup := range tasksByCommonSpec {
 		s.scheduleTaskGroup(ctx, taskGroup, schedulingDecisions)
 	}
@@ -676,7 +675,7 @@ func (s *Scheduler) scheduleNTasksOnNodes(ctx context.Context, n int, taskGroup 
 
     // 降序排列
     sort.Sort(sort.Reverse(sort.IntSlice(memory_list)))
-    log.G(ctx).Infof("memory of tasks is: %v", memory_list)
+    log.G(ctx).Infof("memory of tasks is by hongliping: %v", memory_list)
 
     // 根据memory降序的方式遍历task
     for _, value := range memory_list{
@@ -695,7 +694,7 @@ func (s *Scheduler) scheduleNTasksOnNodes(ctx context.Context, n int, taskGroup 
         }
         // 未找到合适的task
         if taskID == ""{
-            log.G(ctx).Infof("memory is %v not suitable for task", value)
+            log.G(ctx).Infof("memory is %v not suitable for task by hongliping", value)
             continue
         }
 
@@ -710,7 +709,7 @@ func (s *Scheduler) scheduleNTasksOnNodes(ctx context.Context, n int, taskGroup 
 
 		log.G(ctx).WithField("task.id", t.ID).Debugf("assigning to node %s", node.ID)
 		// log.G(ctx).Infof("memory is %v of task %+v assigning to node %s", value, *t, node.ID)
-		log.G(ctx).Infof("memory is: %v of taskID: %v serviceID: %v serviceName: %v assigning to node %s", value, taskID, (*t).ServiceID, (*t).ServiceAnnotations.Name, node.ID)
+		log.G(ctx).Infof("memory is: %v of taskID: %v serviceID: %v serviceName: %v assigning to node %s by hongliping", value, taskID, (*t).ServiceID, (*t).ServiceAnnotations.Name, node.ID)
 		newT := *t
 		newT.NodeID = node.ID
 		newT.Status = api.TaskStatus{

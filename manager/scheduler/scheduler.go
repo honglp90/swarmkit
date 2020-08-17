@@ -408,49 +408,7 @@ func (s *Scheduler) tick(ctx context.Context) {
 		}
 		delete(s.unassignedTasks, taskID)
 	}
-    log.G(ctx).Infof("tasksByCommonSpec is by hongliping: %+v", tasksByCommonSpec)
-
-    // 用于记录内存，用于排序
-	var memory_list = []int{}
-    var memory int64
-
-    // 用于标记task是否指派
-    var task_group_assign_flag map[commonSpecKey]string;
-    task_group_assign_flag = make(map[commonSpecKey]string)
-    for commonSpecKeyInfo, taskGroup := range tasksByCommonSpec {
-        for taskID := range taskGroup{
-            // 收集memory_list
-            memory = (*(*(*taskGroup[taskID]).Spec.Resources).Limits).MemoryBytes
-            memory_list = append(memory_list, *(*int)(unsafe.Pointer(&memory)))
-            // 默认未指派
-            task_group_assign_flag[commonSpecKeyInfo] = "false"
-        }
-    }
-    // 降序排列
-    sort.Sort(sort.Reverse(sort.IntSlice(memory_list)))
-    log.G(ctx).Infof("memory of tasksByCommonSpec is by hongliping: %v", memory_list)
-
-
-    var scheduleTaskGroupFlag string
-    // 根据memory降序的方式遍历task
-    for _, mem_value := range memory_list{
-        for commonSpecKeyInfo, taskGroup := range tasksByCommonSpec {
-            scheduleTaskGroupFlag = "false"
-            for taskID, _ := range taskGroup{
-                 memory = (*(*(*taskGroup[taskID]).Spec.Resources).Limits).MemoryBytes
-                // memory相同且未指派的task
-                if mem_value == *(*int)(unsafe.Pointer(&memory)) && task_group_assign_flag[commonSpecKeyInfo] == "false"{
-                    task_group_assign_flag[commonSpecKeyInfo] = "true"
-                    scheduleTaskGroupFlag = "true"
-                    s.scheduleTaskGroup(ctx, taskGroup, schedulingDecisions)
-                    break
-                }
-            }
-            if scheduleTaskGroupFlag == "true"{
-                break
-            }
-        }
-    }
+    s.scheduleTaskGroupByCommonSpec(ctx, tasksByCommonSpec)
 //	for _, taskGroup := range tasksByCommonSpec {
 //		s.scheduleTaskGroup(ctx, taskGroup, schedulingDecisions)
 //	}
@@ -470,6 +428,53 @@ func (s *Scheduler) tick(ctx context.Context) {
 		// enqueue task for next scheduling attempt
 		s.enqueue(decision.old)
 	}
+}
+
+// 根据memory的降序进行指派task
+func (s *Scheduler) scheduleTaskGroupByCommonSpec(ctx context.Context, tasksByCommonSpec make(map[commonSpecKey]map[string]*api.Task)){
+    // 用于记录内存，用于排序
+	var memory_list = []int{}
+    var memory int64
+
+    // 用于标记task是否指派
+    var task_group_assign_flag map[commonSpecKey]string;
+    task_group_assign_flag = make(map[commonSpecKey]string)
+
+    for commonSpecKeyInfo, taskGroup := range tasksByCommonSpec {
+        for taskID := range taskGroup{
+            // 收集memory_list
+            memory = (*(*(*taskGroup[taskID]).Spec.Resources).Limits).MemoryBytes
+            memory_list = append(memory_list, *(*int)(unsafe.Pointer(&memory)))
+            // 默认未指派
+            task_group_assign_flag[commonSpecKeyInfo] = "false"
+        }
+    }
+
+    // 降序排列
+    sort.Sort(sort.Reverse(sort.IntSlice(memory_list)))
+    log.G(ctx).Infof("memory of tasksByCommonSpec is by hongliping: %v", memory_list)
+
+    var scheduleTaskGroupFlag string
+
+    // 根据memory降序的方式遍历task
+    for _, mem_value := range memory_list{
+        for commonSpecKeyInfo, taskGroup := range tasksByCommonSpec {
+            scheduleTaskGroupFlag = "false"
+            for taskID, _ := range taskGroup{
+                 memory = (*(*(*taskGroup[taskID]).Spec.Resources).Limits).MemoryBytes
+                // memory相同且未指派的task
+                if mem_value == *(*int)(unsafe.Pointer(&memory)) && task_group_assign_flag[commonSpecKeyInfo] == "false"{
+                    task_group_assign_flag[commonSpecKeyInfo] = "true"
+                    scheduleTaskGroupFlag = "true"
+                    s.scheduleTaskGroup(ctx, taskGroup, schedulingDecisions)
+                    break
+                }
+            }
+            if scheduleTaskGroupFlag == "true"{
+                break
+            }
+        }
+    }
 }
 
 func (s *Scheduler) applySchedulingDecisions(ctx context.Context, schedulingDecisions map[string]schedulingDecision) (successful, failed []schedulingDecision) {

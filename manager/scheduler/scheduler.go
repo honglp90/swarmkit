@@ -409,8 +409,8 @@ func (s *Scheduler) tick(ctx context.Context) {
 		delete(s.unassignedTasks, taskID)
 	}
 	// 根据memory的降序进行指派task
-    s.scheduleTaskGroupByCommonSpec(ctx, tasksByCommonSpec)
-    s.scheduleTaskGroupOneOff(ctx, oneOffTasks)
+    s.scheduleTaskGroupByCommonSpec(ctx, tasksByCommonSpec, schedulingDecisions)
+    s.scheduleTaskGroupOneOff(ctx, oneOffTasks, schedulingDecisions)
 //	for _, taskGroup := range tasksByCommonSpec {
 //		s.scheduleTaskGroup(ctx, taskGroup, schedulingDecisions)
 //	}

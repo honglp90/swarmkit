@@ -461,7 +461,7 @@ func (s *Scheduler) scheduleTaskGroupOneOff(ctx context.Context, oneOffTasks []*
         for _, assign_task := range oneOffTasks {
             memory = (*(*assign_task.Spec.Resources).Limits).MemoryBytes
             // memory相同且未指派的task
-            if mem_value == *(*int)(unsafe.Pointer(&memory)) && task_assign_flag[assign_task.ID] = "false"{
+            if mem_value == *(*int)(unsafe.Pointer(&memory)) && task_assign_flag[assign_task.ID] == "false"{
                 t = assign_task
                 task_assign_flag[assign_task.ID] = "true"
                 // 指派任务
@@ -474,7 +474,7 @@ func (s *Scheduler) scheduleTaskGroupOneOff(ctx context.Context, oneOffTasks []*
 
 
 // 根据memory的降序进行指派task
-func (s *Scheduler) scheduleTaskGroupByCommonSpec(ctx context.Context, tasksByCommonSpec make(map[commonSpecKey]map[string]*api.Task)){
+func (s *Scheduler) scheduleTaskGroupByCommonSpec(ctx context.Context, tasksByCommonSpec map[commonSpecKey]map[string]*api.Task){
     // 用于记录内存，用于排序
 	var memory_list = []int{}
     var memory int64

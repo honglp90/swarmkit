@@ -433,7 +433,7 @@ func (s *Scheduler) tick(ctx context.Context) {
 }
 
 // 根据memory的降序进行指派task
-func (s *Scheduler) scheduleTaskGroupOneOff(ctx context.Context, oneOffTasks []*api.Task)){
+func (s *Scheduler) scheduleTaskGroupOneOff(ctx context.Context, oneOffTasks []*api.Task){
     // 用于记录内存，用于排序
 	var memory_list = []int{}
     var memory int64

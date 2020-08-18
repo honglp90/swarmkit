@@ -29,6 +29,11 @@ type schedulingDecision struct {
 	new *api.Task
 }
 
+type commonSpecKey struct {
+    serviceID   string
+    specVersion api.Version
+}
+
 // Scheduler assigns tasks to nodes.
 type Scheduler struct {
 	store           *store.MemoryStore
@@ -375,10 +380,10 @@ func (s *Scheduler) processPreassignedTasks(ctx context.Context) {
 
 // tick attempts to schedule the queue.
 func (s *Scheduler) tick(ctx context.Context) {
-	type commonSpecKey struct {
-		serviceID   string
-		specVersion api.Version
-	}
+//	type commonSpecKey struct {
+//		serviceID   string
+//		specVersion api.Version
+//	}
 	tasksByCommonSpec := make(map[commonSpecKey]map[string]*api.Task)
 	var oneOffTasks []*api.Task
 	schedulingDecisions := make(map[string]schedulingDecision, len(s.unassignedTasks))
